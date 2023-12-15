@@ -1,0 +1,71 @@
+{
+  "name": "vjw-dashboard",
+  "version": "0.1.0",
+  "private": true,
+  "dependencies": {
+    "@apollo/client": "^3.7.15",
+    "@ckeditor/ckeditor5-build-classic": "^38.1.1",
+    "@ckeditor/ckeditor5-react": "^6.1.0",
+    "@testing-library/jest-dom": "^5.16.5",
+    "@testing-library/react": "^13.4.0",
+    "@testing-library/user-event": "^13.5.0",
+    "antd": "^5.7.0",
+    "apollo-link-rest": "^0.9.0",
+    "apollo-upload-client": "^17.0.0",
+    "dayjs": "^1.11.9",
+    "draft-js": "^0.10.5",
+    "draft-js-export-html": "^1.4.1",
+    "draft-js-import-html": "^1.4.1",
+    "framer-motion": "^10.12.16",
+    "graphql": "^16.6.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-icons": "^4.10.1",
+    "react-redux": "^8.0.5",
+    "react-router-dom": "^6.14.1",
+    "react-scripts": "5.0.1",
+    "redux": "^4.2.1",
+    "redux-thunk": "^2.4.2",
+    "swiper": "^9.3.2",
+    "web-vitals": "^2.1.4",
+    "workbox-background-sync": "^6.6.0",
+    "workbox-broadcast-update": "^6.6.0",
+    "workbox-cacheable-response": "^6.6.0",
+    "workbox-core": "^6.6.0",
+    "workbox-expiration": "^6.6.0",
+    "workbox-google-analytics": "^6.6.0",
+    "workbox-navigation-preload": "^6.6.0",
+    "workbox-precaching": "^6.6.0",
+    "workbox-range-requests": "^6.6.0",
+    "workbox-routing": "^6.6.0",
+    "workbox-strategies": "^6.6.0",
+    "workbox-streams": "^6.6.0"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject"
+  },
+  "eslintConfig": {
+    "extends": [
+      "react-app",
+      "react-app/jest"
+    ]
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "devDependencies": {
+    "tailwindcss": "^3.3.2"
+  }
+}
