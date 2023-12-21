@@ -124,7 +124,7 @@ const UpdateModal = (props, ref) => {
               placeholder='Enter Making Charge'
               // maxLength={30}
               // editable
-              value={updateData?.makingCharge}  // Set default value to an empty string
+              value={updateData?.makingCharge || null}  // Set default value to an empty string
               title='Making Charge *'
               showCount={true}
               handleChange={(e) => OnChange(e)}

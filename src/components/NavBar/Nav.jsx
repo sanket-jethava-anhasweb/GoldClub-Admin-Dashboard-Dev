@@ -195,7 +195,7 @@ const Nav = ({ role }) => {
 
   useEffect(() => {
     if (checkLogged());
-    validateUser(); // validates user
+    // validateUser();
   }, []);
   return (
     <>

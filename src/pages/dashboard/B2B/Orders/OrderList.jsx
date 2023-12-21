@@ -90,7 +90,7 @@ const OrderList = () => {
   const [fetchOrders, orders] = useLazyQuery(GET_ORDER_LIST, {
     fetchPolicy: "cache-and-network",
     variables: {
-      first: 20,
+      first: 100,
       filter: { created: null },
       sort: { direction: "DESC", field: "NUMBER" },
     },
