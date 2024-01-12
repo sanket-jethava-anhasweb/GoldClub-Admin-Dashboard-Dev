@@ -31,31 +31,30 @@ query SearchCustomers($after: String, $first: Int!, $query: String!) {
 `
 export const GET_HOME = gql`
 query Home {
+  totalUsers : customers(first:100){
+    totalCount
+  }
+  totalActiveStore : storeCount
+  
   salesToday: ordersTotal(period: TODAY) {
     gross {
       amount
       currency
-      __typename
     }
-    __typename
   }
-  ordersToday: orders(created:TODAY , sortBy:{field:NUMBER,direction:DESC}) {
+  ordersToday: orders(created: TODAY, sortBy: {field: NUMBER, direction: ASC}) {
     totalCount
-    __typename
   }
   ordersToFulfill: orders(status: READY_TO_FULFILL) {
     totalCount
-    __typename
   }
-  ordersToCapture: orders(status: READY_TO_CAPTURE,first:10) {
+  ordersToCapture: orders(status: READY_TO_CAPTURE, first: 10) {
     totalCount
-    __typename
   }
   productsOutOfStock: products(stockAvailability: OUT_OF_STOCK) {
     totalCount
-    __typename
   }
-  productTopToday: reportProductSales(period:TODAY , first: 15) {
+  productTopToday: reportProductSales(period: TODAY, first: 15) {
     edges {
       node {
         id
@@ -63,33 +62,22 @@ query Home {
           gross {
             amount
             currency
-            __typename
           }
-          __typename
-        }
-        attributes {
-          values {
-            id
-            name
-            __typename
-          }
-          __typename
         }
         product {
           id
           name
+          category
+          {
+            name
+          }
           thumbnail {
             url
-            __typename
           }
-          __typename
         }
         quantityOrdered
-        __typename
       }
-      __typename
     }
-    __typename
   }
   activities: homepageEvents(last: 10) {
     edges {
@@ -97,34 +85,87 @@ query Home {
         amount
         orderStatus
         paymentStatus
-        composedId
         date
         phoneNumber
         phoneNumberType
         id
-        message
         orderNumber
-        oversoldItems
         quantity
         type
         user {
           id
+          firstName
+          lastName
           phoneNumber
-          __typename
         }
-        __typename
       }
-      __typename
     }
-    __typename
   }
 }
 `
 
+export const GET_ALL_PARENT_PRODUCTS = gql`
+query allProductsData($first: Int!, $last: Int, $before: String,  $after:String, $filter: ProductFilterInput) {
+  products(first: $first, last: $last, after: $after, before: $before, filter: $filter) {
+    edges {
+      node {
+        id
+        name
+        thumbnail {
+          url
+        }
+        category {
+          name
+        }
+      }
+    }
+    pageInfo {
+      hasPreviousPage
+      hasNextPage
+      startCursor
+      endCursor
+    }
+  }
+}
+`
+
+export const GET_STORE_DETAILS = gql`
+query exportURL{
+  exportStoreDetails
+}
+`
+
+
+
+//CATEGORIES OPTIONS PAGINATION
+export const CATEGORIES_LIST = gql`
+fragment CategoryFragment on Category {
+  name
+  children(first:100) {
+    edges { 
+      node {
+        id
+        name
+      }
+    }
+  }
+}
+query RootCategories($first: Int!, $sort: CategorySortingInput) {
+    categories(level: 0, first: $first, sortBy: $sort) {
+      edges {
+        node {
+          ...CategoryFragment
+      }
+    }
+  }
+}
+`
+
+
 // CREATE PRODUCT QUERIES
 export const SEARCH_CATEGORIES = gql`
 ${PAGE_INFO}
-query SearchCategories($after: String, $first: Int!, $query: String!) {
+query SearchCategories($after: String, $first: Int!, $query: String) {
       search: categories(after: $after, first: $first, filter: {search: $query}) {
         edges {
           node {
@@ -488,83 +529,43 @@ fragment ProductPricingField on Product {
   }
   __typename
 }
-query allProductsData(
-  #$search: String!
-  #$isPublished: Boolean!
-  $filter:ProductFilterInput
-  #$attribute_slug: String!
-  #$attribute_value: [String]
-  #$categories: [ID]!
- # $collections: [ID]!
- # $productType: ID!
-  #$stockAvailability: StockAvailability!
-) {
-  products(
-    filter: $filter 
-    #{
-       #search:$search # user search text
-      # attributes:[{
-    #     slug: $attribute_slug# attribute slug
-     #    values:$attribute_value # attribute value
-      # }]
-      # categories: $categories # category id
-      # collections:$collections # collection id
-       #productType:$productType # product type id
-    #}
-    first: 100
-    stockAvailability: IN_STOCK
-  ) {
-    edges {
-      node {
-        ...BasicProductFields
-        ...ProductPricingField
-        category {
-          id
-          name
-          __typename
+query products($first:Int!,$filter:ProductFilterInput!){
+  products(first:$first,filter:$filter){
+    edges{
+      node{
+        childProduct{
+       	...BasicProductFields
+            ...ProductPricingField
+            category {
+                  id
+              name
+              __typename
+            }   
         }
-        isPublished
-        isAvailableForPurchase
-        attributes {
-          attribute {
-            id
-            name
-            slug
-          }
-          values {
-            id
-            name
-            slug
-            inputType
-          }
-        }
-        __typename
+       ...BasicProductFields
+            ...ProductPricingField
+            category {
+                  id
+              name
+              __typename
+            }
       }
-      __typename
     }
     totalCount
     __typename
   }
 }
-
-
-
 `
 export const GET_ALL_PRODUCTS_PARENT_ID = gql`
 fragment BasicProductFields on Product {
   id
   name
-  category{
+  category {
     id
     name
     __typename
   }
-  collections{
-    id
-    name
-    __typename
-  }
-  productType{
+  collections {
     id
     name
     __typename
@@ -594,6 +595,7 @@ fragment Price on TaxedMoney {
   }
   __typename
 }
+
 fragment ProductPricingField on Product {
   pricing {
     onSale
@@ -623,19 +625,9 @@ fragment ProductPricingField on Product {
   }
   __typename
 }
-query allProductsData(
-  
-  $filter:ProductFilterInput
-  #$attribute_slug: String!
-  #$attribute_value: [String]
 
-) {
-  products(
-    filter: $filter 
-  
-    first: 20
-    stockAvailability: IN_STOCK
-  ) {
+query allProductsData($after: String, $first: Int!, $filter: ProductFilterInput) {
+  products(filter: $filter, after: $after, first: $first, stockAvailability: IN_STOCK) {
     edges {
       node {
         ...BasicProductFields
@@ -647,36 +639,43 @@ query allProductsData(
         }
         isPublished
         isAvailableForPurchase
-        variants{
+        variants {
           id
           name
           sku
-          
+          __typename
         }
         attributes {
           attribute {
             id
             name
             slug
+            __typename
           }
           values {
             id
             name
             slug
             inputType
+            __typename
           }
+          __typename
         }
         __typename
       }
       __typename
     }
     totalCount
+    pageInfo {
+      hasPreviousPage
+      hasNextPage
+      startCursor
+      endCursor
+      __typename
+    }
     __typename
   }
 }
-
-
-
 `
 
 export const GET_PRODUCT_BY_ID = gql`
@@ -716,22 +715,6 @@ fragment ProductVariantAttributesFragment on Product {
       inputType
       name
       slug
-      __typename
-    }
-    __typename
-  }
-  productType {
-    id
-    variantAttributes {
-      id
-      name
-      inputType
-      values {
-        id
-        name
-        slug
-        __typename
-      }
       __typename
     }
     __typename
@@ -929,6 +912,118 @@ query ProductDetails($id: ID!) {
   taxTypes {
         ...TaxTypeFragment
     __typename
+  }
+}
+`
+export const GET_PROD_BY_ID_UPDATE_PRODUCT = gql`
+query ProductDetails($id: ID!) {
+  product(id: $id) {
+    id
+    name
+    slug
+    category {
+      id
+      name
+    }
+    images {
+      url
+      id
+      sortOrder
+    }
+    collections {
+      id
+      name
+      backgroundImage {
+        url
+        alt
+      }
+    }
+    attributes {
+      attribute {
+        id
+        slug
+        name
+      }
+      values {
+        name
+      }
+    }
+    variants {
+      sku
+      trackInventory
+    }
+    chargeTaxes
+    isPublished
+    publicationDate
+    seoTitle
+		visibleInListings
+  }
+}
+`
+
+export const GET_PRODUCT_BY_ID_OPTIMIZED = gql`
+query ProductDetails($id: ID!) {
+	product(id: $id) {
+    id
+  name
+  category {
+    name
+  }
+  childProduct{
+    id
+    name
+    thumbnail {
+      url
+    }
+    variants {
+      name
+    }
+    category {
+      name
+    }
+  }
+  collections {
+    name
+  }
+  attributes {
+    attribute {
+      name
+      slug
+    }
+    values {
+      name
+    }
+  }
+  pricing {
+    priceRangeUndiscounted {
+      start {
+        gross {
+          amount
+        }
+      }
+      stop {
+        gross {
+          amount
+        }
+      }
+    }
+  }
+  isAvailableForPurchase
+  isAvailable
+  isPublished
+  publicationDate
+  
+  images {
+    id
+    sortOrder
+    url
+  }
+  variants {
+    id
+    name
+  }
+  availableForPurchase
+  visibleInListings
   }
 }
 `
@@ -1203,38 +1298,35 @@ query getMetalRates{
 }
 `
 
-export const GET_ORDER_LIST = gql`# Write your query or mutation here
-
-# Write your query or mutation here
-# Write your query or mutation here
+export const GET_ORDER_LIST = gql`
 fragment AddressFragment on Address {
-    city
-  cityArea
+  city
   companyName
   country {
-      __typename
-    code
     country
   }
   countryArea
   firstName
-  id
   lastName
   phone
   postalCode
   streetAddress1
   streetAddress2
-  __typename
 }
 
-query OrderList($first: Int, $after: String, $last: Int, $before: String, $filter: OrderFilterInput, $sort: OrderSortingInput) {
-    orders(before: $before, after: $after, first: $first, last: $last, filter: $filter, sortBy: $sort) {
-      edges {
-        node {
-          __typename
+query OrderList($first: Int!, $after: String, $last: Int, $before: String, $filter: OrderFilterInput, $sort: OrderSortingInput) {
+  orders(
+    before: $before
+    after: $after
+    first: $first
+    last: $last
+    filter: $filter
+    sortBy: $sort
+  ) {
+    edges {
+      node {
         billingAddress {
-            ...AddressFragment
-          __typename
+          ...AddressFragment
         }
         created
         id
@@ -1242,86 +1334,75 @@ query OrderList($first: Int, $after: String, $last: Int, $before: String, $filte
         number
         paymentStatus
         status
-          fulfillments{
+        fulfillments {
+          id
+          fulfillmentOrder
+          status
+          __typename
+        }
+        lines {
+          id
+          productName
+          variantName
+          quantity
+          quantityFulfilled
+          variant {
             id
-            fulfillmentOrder
-            status
-          }
-          lines{
-            id
-            productName
-            variantName
-            productSku
-            quantity
-            quantityFulfilled
-            variant{
+            name
+            product {
               id
-              name
-              product{
-                id
-                attributes{
-                values{
-                    name
-                  }
-                  attribute{
-                    values
-                    {
-                      name
-                    }
-                  }
-                  
-                }
-                category{
+              attributes {
+                values {
                   name
                 }
-                
+              }
+              category {
+                name
               }
             }
-            thumbnail{
-              url
-              alt
-            }
-            unitPrice
-            {currency
-              gross
-              {currency
-              amount}
-              net{currency
-              amount}
-              tax{currency
-              amount}
-            }
-            totalPrice{
-              currency
-              gross{currency
-              amount}
-              net{currency
-              amount}
-              tax{currency
-              amount}
-            }
-            
           }
+          thumbnail {
+            url
+            alt
+          }
+          unitPrice {
+            currency
+            gross {
+              currency
+              amount
+            }
+          }
+          totalPrice {
+            currency
+            gross {
+              currency
+              amount
+            }
+            net {
+              currency
+              amount
+            }
+            tax {
+              currency
+              amount
+            }
+          }
+        }
         total {
-            __typename
           gross {
-              __typename
             amount
             currency
           }
         }
         phoneNumber
       }
-      __typename
     }
     pageInfo {
-        hasPreviousPage
+      hasPreviousPage
       hasNextPage
       startCursor
       endCursor
-      __typename
     }
-    __typename
   }
 }
 `
@@ -1561,6 +1642,17 @@ query CategoryDetails($id: ID!, $first: Int, $after: String, $last: Int, $before
   }
 }
 `
+//optimized
+export const GET_CATEGORY_METADATA = gql`
+query CategoryDetails($id: ID!) {
+  category(id: $id) {
+    metadata {
+      key
+      value
+    }
+  }
+}`
+
 export const GET_SUBCATEGORY_LIST = gql`
 query listOfSubCategoryByCategoryID($subcategoryId: ID!) {
   category(id: $subcategoryId) {
@@ -1572,6 +1664,7 @@ query listOfSubCategoryByCategoryID($subcategoryId: ID!) {
   }
   }
 }`
+
 export const GET_CATEGORY_DETAIL_SLUG = gql`
 fragment Money on Money {
     amount
@@ -1705,6 +1798,8 @@ query CategoryDetails($slug:String!,$first: Int, $after: String, $last: Int, $be
     __typename
   }
 }`
+
+//optimized
 export const GET_ALL_MANUFACTURERS = gql`
 query listManufecturers{
   manufecturers{
@@ -1715,10 +1810,8 @@ query listManufecturers{
     contactPersonName
     phoneNumber
     city
-    __typename
   }
-}
-`
+}`
 
 export const GET_SUBCATEGORY_MAKINGCHARGE = gql`
   query getCategoryPrice(
@@ -1753,8 +1846,7 @@ export const GET_SUBCATEGORY_MAKINGCHARGE = gql`
     createdAt
     updatedAt
   }
-}
-`
+}`
 
 export const GET_ALL_MANUFACTURER_LIST = gql`
 query listManufecturers{
@@ -2678,3 +2770,4 @@ query getCategoryPrices(
 // {
 
 // }`
+

@@ -3,13 +3,16 @@ import { Select } from "antd";
 
 const SelectComponent = (props) => {
   const [value, setValue] = useState(props?.value);
+
   const handleChange = (e) => {
     setValue(e);
     props?.handleChange(e);
   };
+
   useEffect(() => {
     setValue(props?.value);
-  }, []);
+  }, [props?.value]);
+
   return (
     <section className={"flex flex-col items-start " + props?.className}>
       <label

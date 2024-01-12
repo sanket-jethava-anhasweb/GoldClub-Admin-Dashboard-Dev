@@ -30,10 +30,17 @@ const PriceCard = (props) => {
     },
   });
 
+
+
   const handleChange = (e) => {
     let val = e.target.value;
     if (val === "" || val === undefined || val === null || val < 0) setValue(0);
     else setValue(val);
+  };
+  let variablesToUpdate = {
+    gold24kPremium: props?.au,
+    silver999kPremium: props?.ag,
+    platinum999kPremium: 0.0,
   };
   return (
     <Card
@@ -42,25 +49,33 @@ const PriceCard = (props) => {
         <span
           className='text-blue-600 cursor-pointer font-semibold dark:text-white '
           onClick={() => {
-            if (props?.title?.toUpperCase()?.includes("GOLD"))
-              updatePremium({
-                variables: {
-                  gold24kPremium: parseFloat(value),
-                },
-              });
-            else if (props?.title?.toUpperCase()?.includes("SILVER"))
-              updatePremium({
-                variables: {
-                  silver999kPremium: parseFloat(value),
-                },
-              });
-            else if (props?.title?.toUpperCase()?.includes("PLATINUM"))
-              updatePremium({
-                variables: {
-                  platinum999kPremium: parseFloat(value),
-                },
-              });
+            
+          
+            if (props?.title?.toUpperCase()?.includes("GOLD")) {
+              variablesToUpdate = {
+                ...variablesToUpdate,
+                gold24kPremium: parseFloat(value),
+              };
+            } else if (props?.title?.toUpperCase()?.includes("SILVER")) {
+              variablesToUpdate = {
+                ...variablesToUpdate,
+                silver999kPremium: parseFloat(value),
+              };
+            } else if (props?.title?.toUpperCase()?.includes("PLATINUM")) {
+              variablesToUpdate = {
+                ...variablesToUpdate,
+                platinum999kPremium: parseFloat(value),
+              };
+            }
+          
+            console.log("MCX GOld: ", variablesToUpdate.gold24kPremium);
+            console.log("MCX Silver: ", variablesToUpdate.silver999kPremium);
+          
+            updatePremium({
+              variables: variablesToUpdate,
+            });
           }}
+          
         >
           {!loading && (edit ? "Edit" : "Save")}
           {loading && <Spin indicator={antIcon} />}
@@ -101,11 +116,24 @@ const PriceCard = (props) => {
 const Prices = () => {
   const [fetchMCXRates, mcx] = useLazyQuery(GET_MCX_RATES);
   const [fetchMCXPremiums, premium] = useLazyQuery(GET_MCX_PREMIUMS);
+  const [auPremium, SetAuPremium] = useState(0.0);
+  const [agPremium, SetAgPremium] = useState(0.0);
+  const [ptPremium, SetPtPremium] = useState(0.0);
 
   useEffect(() => {
     fetchMCXRates();
     fetchMCXPremiums();
   }, []);
+
+  useEffect(() => {
+    SetAuPremium(premium?.data?.metalRates?.gold24kPremium || 0.0);
+  }, [premium?.data?.metalRates?.gold24kPremium]);
+
+  useEffect(() => {
+    SetAgPremium(premium?.data?.metalRates?.silver999kPremium || 0.0);
+  }, [premium?.data?.metalRates?.silver999kPremium]);
+    
+
   return (
     <div>
       <SectionTitle title='MCX Rates' />
@@ -127,6 +155,9 @@ const Prices = () => {
 
         {mcx?.data?.mcxRates?.map((rate) => (
           <PriceCard
+
+            au = {auPremium}
+            ag = {agPremium}
             title={rate?.Name}
             loading={false}
             price={rate?.Close}

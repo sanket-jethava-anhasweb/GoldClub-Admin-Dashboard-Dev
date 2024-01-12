@@ -185,8 +185,8 @@ const Nav = ({ role }) => {
       label: <NavLink to='/login'>Logout</NavLink>,
     },
   ];
-  const sideNav = useSelector((state) => state?.client?.sideNavOpen);
-  const theme = useSelector((state) => state?.client?.themeLight);
+  const sideNav = useSelector((state) => state?.client?.sideNavClose);
+  const theme = useSelector((state) => state?.client?.themeDark);
   const dispatch = useDispatch();
   const toggleNav = () => {
     if (sideNav) dispatch(closeSideNav());

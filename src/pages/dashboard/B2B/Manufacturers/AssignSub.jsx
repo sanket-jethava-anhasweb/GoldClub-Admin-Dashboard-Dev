@@ -429,7 +429,7 @@ const AssignSubCategory = () => {
               placeholder='Select Wastage charge mode '
               required={true}
               options={[
-                { val: "percentage", name: "Percentage" },
+                { val: "percent", name: "Percentage" },
                 { val: "rspergram", name: "Rs. per gram" },
                 { val: "flat", name: "Flat" },
               ].map((cat) => ({

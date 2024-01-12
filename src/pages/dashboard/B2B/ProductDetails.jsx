@@ -5,13 +5,10 @@ import {
   Link,
   useNavigate,
   useParams,
-  useSearchParams,
 } from "react-router-dom";
 import {
-  GET_ALL_PRODUCTS_FILTERED,
-  GET_PRODUCT_BY_ID,
+  GET_PRODUCT_BY_ID_OPTIMIZED,
 } from "../../../GraphQl/Query";
-import { QuestionCircleOutlined } from "@ant-design/icons";
 
 import Spinner from "../../../components/Spinner/Spinner";
 import SectionTitle from "../../../components/Title/SectionTitle";
@@ -38,17 +35,14 @@ const DetailWrapper = (props) => {
     <div
       className={
         "flex flex-col items-start justify-start gap-y-1 my-3" +
-        " " +
-        props?.className
-      }
-    >
+        " " + props?.className
+      }>
       <h2 className='font-semibold text-sm dark:text-slate-400'>
         {props?.query}
       </h2>
       <h3 className='font-semibold text-lg dark:text-slate-50 break-all'>
         {props?.value}
       </h3>
-
       {props?.children}
     </div>
   );
@@ -56,15 +50,7 @@ const DetailWrapper = (props) => {
 const DetailCheck = (props) => {
   return (
     <Col span={10} className='m-2'>
-      {/* <Checkbox
-        checked={props?.value == true ? true : false}
-        className={
-          "pointer-events-none min-w-[40%] lg:min-w-[30%] max-w-full" +
-          " " +
-          props?.className
-        }
-      ></Checkbox> */}
-      <div class='flex items-start  '>
+      <div className='flex items-start  '>
         <img
           src={
             process.env.PUBLIC_URL + props?.value == "true"
@@ -87,7 +73,7 @@ const ProductDetails = () => {
   const [modalopen, setmodalOpen] = useState(false);
   const [messageApi, contextHolder] = message.useMessage();
   const [localProducts, setLocalProducts] = useState(null);
-
+  const [variantValues, setVariantValues] = useState([]);
   const setTrial = (message) => {
     messageApi.open({
       type: "loading",
@@ -107,49 +93,15 @@ const ProductDetails = () => {
     });
   };
   const navigate = useNavigate();
-  const [getAllProducts, allProducts] = useLazyQuery(
-    GET_ALL_PRODUCTS_FILTERED,
-    {
-      onError: (err) => {
-        console.log(err);
-      },
-    }
-  );
-  const [fetchProduct, product] = useLazyQuery(GET_PRODUCT_BY_ID, {
+  
+  const [fetchProduct, product] = useLazyQuery(GET_PRODUCT_BY_ID_OPTIMIZED, {
     variables: {
       id: params?.id,
     },
     onCompleted: (data) => {
-      console.log(data);
-      getAllProducts({
-        variables: {
-          // filter: {
-          //   search: null,
-          //   categories: data?.product?.category?.id,
-          //   collections: null,
-          //   productType: null,
-          //   attributes: product?.node?.id,
-          // },  
-            // first: 100,
-            
-            filter: {
-              // ids: ["UHJvZHVjdDoxMDQ4"],
-              attributes: [{
-                slug: "parent-product-id",
-                value: params?.id
-            }],
-          },
-          sort: { direction: "DESC", field: "PUBLICATION_DATE" },
-        },
-        onCompleted: (subCatData) => {
-          let temp = subCatData?.products?.edges?.filter(
-            (subcat) =>
-              subcat?.node?.attributes[18]?.values[0]?.name == params?.id
-          );
-          let child = 
-          setLocalProducts(temp);
-        },
-      });
+      setLocalProducts(data?.product?.childProduct);
+
+      setVariantValues(data?.product?.variants[0]?.name?.split(" / "));
     },
     onError: (err) => {
       setError("Unable to retrieve product");
@@ -159,12 +111,9 @@ const ProductDetails = () => {
   const [deleteProduct, deletedProduct] = useMutation(DELETE_PRODUCT, {
     onCompleted: (data) => {
       setSuccess("Product deleted successfully!");
-
       setTimeout(() => {
         navigate("/dashboard/b2b/products");
       }, 1000);
-
-      console.log(data);
     },
     onError: (err) => {
       setError(err?.message);
@@ -179,10 +128,13 @@ const ProductDetails = () => {
     localProducts.forEach((localProduct) => {
       const productToDeleteId = localProduct?.node?.id;
 
-      // Call the deleteProduct mutation for each product
       deleteProduct({ variables: { id: productToDeleteId } });
     });
   };
+  const attributeMap = product?.data?.product?.attributes.reduce((map, attr) => {
+    map[attr?.attribute?.slug] = attr;
+    return map;
+  }, {});
   return (
     <>
       <section className='py-4'>
@@ -240,9 +192,40 @@ const ProductDetails = () => {
                   >
                     <section className='flex flex-wrap items-start justify-start gap-2'>
                       <DetailWrapper
-                        className='max-w-full md:min-w-[45%] lg:min-w-[30%]'
+                        className='w-full'
                         query='Name'
                         value={product?.data?.product?.name || "N/A"}
+                      />
+                      
+                      <DetailWrapper
+                        className='max-w-full md:min-w-[45%] lg:min-w-[30%]'
+                        query='Publish Date'
+                        value={product?.data?.product?.publicationDate || "N/A"}
+                      />
+                      <DetailWrapper
+                        className='max-w-full md:min-w-[45%] lg:min-w-[30%]'
+                        query='Category'
+                        value={product?.data?.product?.category?.name || "N/A"}
+                      />
+                      <DetailWrapper
+                        className='max-w-full md:min-w-[45%] lg:min-w-[30%] flex-wrap'
+                        query='Collections'
+                        value={product?.data?.product?.collections?.map(
+                          (collection) => (
+                            <div className='inline-flex text-white bg-gray-400 border-0 p-2 rounded text-xs mr-2'>
+                              {collection?.name}
+                            </div>
+                          )
+                        )}
+                      />
+                      <DetailWrapper
+                        query='Weight'
+                        className='max-w-full md:min-w-[45%] lg:min-w-[30%]'
+                        value={variantValues &&
+                          variantValues[7] +
+                            ' gm' ||
+                          "N/A"
+                        }
                       />
                       <DetailWrapper
                         className='max-w-full md:min-w-[45%] lg:min-w-[30%]'
@@ -273,135 +256,61 @@ const ProductDetails = () => {
                           </div>
                         }
                       />
-                      <DetailWrapper
-                        className='max-w-full md:min-w-[45%] lg:min-w-[30%]'
-                        query='Publish Date'
-                        value={product?.data?.product?.publicationDate || "N/A"}
-                      />
-                      <DetailWrapper
-                        className='max-w-full md:min-w-[45%] lg:min-w-[30%]'
-                        query='Category'
-                        value={product?.data?.product?.category?.name || "N/A"}
-                      />
-                      <DetailWrapper
-                        className='max-w-full md:min-w-[45%] lg:min-w-[30%] flex-wrap'
-                        query='Collections'
-                        value={product?.data?.product?.collections?.map(
-                          (collection) => (
-                            <div className='inline-flex text-white bg-gray-400 border-0 p-2 rounded text-xs mr-2'>
-                              {collection?.name}
-                            </div>
-                          )
-                        )}
-                      />
-                      <DetailWrapper
-                        query='Weight'
-                        className='max-w-full md:min-w-[45%] lg:min-w-[30%]'
-                        value={
-                          product?.data?.product?.weight?.value +
-                            ' gm' ||
-                          "N/A"
-                        }
-                      />
                     </section>
                   </Card>
-
+                  
                   <Card
                     type='inner'
                     title={
                       <span className='dark:text-slate-200'>Attributes</span>
                     }
-                    // extra={
-                    //   <Link
-                    //     to='edit'
-                    //     className='text-blue-500 dark:text-slate-200 font-semibold cursor-pointer'
-                    //   >
-                    //     Edit
-                    //   </Link>
-                    // }
                     className='dark:bg-slate-800 dark:text-slate-400 mb-4'
                   >
-                    <section className='flex flex-wrap gap-4'>
-                      <List
-                        grid={{
-                          gutter: 16,
-                          xs: 1,
-                          sm: 2,
-                          md: 2,
-                          lg: 3,
-                          xl: 3,
-                        }}
-                        dataSource={product?.data?.product?.attributes.filter(attr => {
-                          const attributeName = attr?.attribute?.name?.toLowerCase();
-                          // Exclude specific attributes
-                          return !["gemstone details product", "hsn code", "gst", "title", "parent product id","manufacturer id", "Is Design bank", "design product id", "display made to order size", "is common gemstone", "is common wastage charge", "is common making charge"].includes(attributeName);
-                        })}
-                        renderItem={(attr) => (
-                          <div className='flex flex-col items-start justify-between w-full m-2 '>
-                            <h5 className='text-sm w-full font-bold break-normal dark:text-slate-400 pr-4'>
-                              {attr?.attribute?.name}
-                            </h5>
-                            <h5 className='text-sm w-full font-semibold dark:text-slate-50'>
-                              {attr?.values[0]?.name || "N/A"}
-                            </h5>
-                          </div>
-                        )}
-                      />
+                    <section className='flex flex-wrap gap-4 '>
+                          {["metal-type",
+                            "gold-carat",
+                            "silver-carat",
+                            "platinum-carat",
+                            "gold-color",
+                            "silver-color",
+                            "platinum-color",
+                            "availability",
+                            "communityregion",
+                            "ocassian",
+                            "gender",
+                            "type",
+                            "gemstone",
+                            "gemstone-type",
+                            "enter-min-weight-range",
+                            "enter-max-weight-range",
+                            "making-charge-mode",
+                            "making-charge-product",
+                            "wastage-charge-mode",
+                            "wastage-charge-prouct"
+                            ].map(attributeSlug => {
+                            const attribute = attributeMap[attributeSlug];
+
+                            if (!attribute || !attribute?.values[0]?.name || attribute?.values[0]?.name == ["none"] || attribute?.values[0]?.name === "none") {
+                              return null;
+                            }
+                      
+                            return (
+                              <div className='flex flex-col items-start justify-between w-3/12 m-2' key={attributeSlug}>
+                                <h5 className='text-sm w-full font-semibold break-normal dark:text-slate-400 pr-4'>
+                                  {attribute?.attribute?.name}
+                                </h5>
+                                <h5 className='text-xl w-full font-semibold dark:text-slate-50'>
+                                  {attribute?.values[0]?.name}
+                                </h5>
+                              </div>
+                            );
+                          })}
                     </section>
                   </Card>
-
                   <Card
                     type='inner'
                     title={
-                      <span className='dark:text-slate-200'>Metadata</span>
-                    }
-                    // extra={
-                    //   <Link
-                    //     to='edit'
-                    //     className='text-blue-500 dark:text-slate-200 font-semibold cursor-pointer'
-                    //   >
-                    //     Edit
-                    //   </Link>
-                    // }
-                    className='dark:bg-slate-800 dark:text-slate-400  mb-4'
-                  >
-                    {/* <section className="flex flex-wrap items-start justify-start "> */}
-                    <Checkbox.Group
-                      style={{
-                        width: "100%",
-                      }}
-                    >
-                      {/* <DetailCheck
-                        title='Taxes Charged'
-                        value={product?.data?.product?.chargeTaxes}
-                      /> */}
-
-                      {/* <DetailCheck
-                        title='Available'
-                        value={product?.data?.product?.isAvailable}
-                      /> */}
-
-                      <DetailCheck
-                        title='Available for Purchase'
-                        value={product?.data?.product?.isAvailableForPurchase}
-                      />
-
-                      <DetailCheck
-                        title='Published'
-                        value={product?.data?.product?.isPublished}
-                      />
-                      <DetailCheck
-                        title='Visible in Listings'
-                        value={product?.data?.product?.visibleInListings}
-                      />
-
-                      {/* </section> */}
-                    </Checkbox.Group>
-                  </Card>
-                  <Card
-                    type='inner'
-                    title={
-                      <span className='dark:text-slate-200'>Variants</span>
+                      <span className='dark:text-slate-200'>Variant Data</span>
                     }
                     extra={
                       <Link
@@ -428,24 +337,56 @@ const ProductDetails = () => {
                             to={"variant-edit?id=" + variant.id}
                             className='flex flex-col'
                           >
-                            <h5 className='font-bold text-sm break-all'>
-                              {variant?.name}
+                            <h5 className='font-bold text-white text-2xl break-all'>
+                              {"Size : " + variant?.name?.split("/")[0]}
                             </h5>
-                            <h3 className='font-semibold text-md break-all'>
-                              {variant?.sku}
-                            </h3>
-                            <Divider className='dark:bg-white/10' />
                           </Link>
                         ))}
                       </section>
                     )}
                   </Card>
+                  <Card
+                    type='inner'
+                    title={
+                      <span className='dark:text-slate-200'>Metadata</span>
+                    }
+                    // extra={
+                    //   <Link
+                    //     to='edit'
+                    //     className='text-blue-500 dark:text-slate-200 font-semibold cursor-pointer'
+                    //   >
+                    //     Edit
+                    //   </Link>
+                    // }
+                    className='dark:bg-slate-800 dark:text-slate-400  mb-4'
+                  >
+                    {/* <section className="flex flex-wrap items-start justify-start "> */}
+                    <Checkbox.Group
+                      style={{
+                        width: "100%",
+                      }}
+                    >
+                      <DetailCheck
+                        title='Available for Purchase'
+                        value={product?.data?.product?.isAvailableForPurchase}
+                      />
+                      <DetailCheck
+                        title='Published'
+                        value={product?.data?.product?.isPublished}
+                      />
+                      <DetailCheck
+                        title='Visible in Listings'
+                        value={product?.data?.product?.visibleInListings}
+                      />
+                    </Checkbox.Group>
+                  </Card>
+                  
                 </>
               )}
             </div>
           </section>
         ) : (
-          <h3>Product Doesnt Exist</h3>
+          <h3>Product Doesn't Exist</h3>
         )}
       </section>
       {product?.data?.product && (
@@ -478,10 +419,10 @@ const ProductDetails = () => {
       )}
           {localProducts != '' && <SectionTitle title='Child Products' />}
           <Divider className='bg-white/10' />
-          {allProducts?.loading && <Spinner />}
+          {localProducts?.loading && <Spinner />}
       {localProducts && (
         <>
-          {!allProducts?.loading && (
+          {!localProducts?.loading && (
             <List
               grid={{
                 gutter: 16,
@@ -494,7 +435,7 @@ const ProductDetails = () => {
               className='w-full'
               dataSource={localProducts}
               renderItem={(product) => (
-                <ChildCard product={product} key={product?.node?.id} />
+                <ChildCard product={product} key={product.id} />
               )}
             />
           )}

@@ -1,9 +1,9 @@
 import { actionConstants } from "../../constants/actionConstants";
 
 let initialState = {
-    sideNavOpen: true,
+    sideNavOpen: false,
     messageOpen: false,
-    themeLight: localStorage.getItem("vjw-dashboard-theme") == "dark" ? false : true,
+    themeDark: localStorage.getItem("vjw-dashboard-theme") == "dark" ? false : true,
     store: null,
     search: null,
     activities: null,

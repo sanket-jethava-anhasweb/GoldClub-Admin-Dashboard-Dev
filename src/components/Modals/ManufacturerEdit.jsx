@@ -84,6 +84,7 @@ const Modal = (props, ref) => {
             placeholder='Enter Manufacturer Address'
             maxLength={30}
             value={manufacturerVar?.address}
+            disabled
             title='Manufacturer Address *'
             showCount={true}
             handleChange={(e) => {
@@ -99,6 +100,7 @@ const Modal = (props, ref) => {
             required={true}
             placeholder='Enter Manufacturer City'
             maxLength={30}
+            disabled
             value={manufacturerVar?.city}
             title='Manufacturer City *'
             showCount={true}

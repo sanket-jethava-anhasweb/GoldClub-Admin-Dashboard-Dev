@@ -79,7 +79,7 @@ const AddProduct = () => {
       nop:0,
       ppc: 0,
       dg:"null",
-     dri: "null",
+      dri: "null",
        tp: 0 
     },
   );
@@ -542,8 +542,12 @@ const AddProduct = () => {
       const dashIndex = size.indexOf('-');
       const openParenthesisIndex = size.indexOf('(');
       let extractedString = size;
-      if (dashIndex != -1 || openParenthesisIndex !== -1) {
-        extractedString = size.substring(dashIndex + 1, openParenthesisIndex);
+      if (dashIndex !== -1 || openParenthesisIndex !== -1) {
+        if (openParenthesisIndex === -1) {
+          extractedString = size.substring(dashIndex + 1);
+        } else {
+          extractedString = size.substring(dashIndex + 1, openParenthesisIndex);
+        }
       }
       updatedSize.push(parseFloat(extractedString));
       console.log("size", extractedString)
@@ -923,7 +927,7 @@ const AddProduct = () => {
               <InputComponent
                 required={true}
                 placeholder='Enter Product Name'
-                maxLength={30}
+                maxLength={100}
                 title='Product Name *'
                 showCount={true}
                 handleChange={(e) => {

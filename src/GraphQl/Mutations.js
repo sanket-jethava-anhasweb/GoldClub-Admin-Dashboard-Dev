@@ -1396,10 +1396,11 @@ mutation CategoryUpdate($id: ID!, $input: CategoryInput!) {
 `
 
 export const CREATE_MANUFACTURER = gql`
-mutation createManufecturer($name:String!,$gstNumber:String,$contactPersonName:String!,$phoneNumber:String!, $city:String!){
+mutation createManufecturer($name:String!, $gstNumber:String, $address:String!, $contactPersonName:String!, $phoneNumber:String!, $city:String!){
   createManufecturer(input:{
     name:$name
     gstNumber:$gstNumber
+    address:$address
     contactPersonName:$contactPersonName
     phoneNumber:$phoneNumber
 		city:$city
@@ -1419,19 +1420,16 @@ mutation createManufecturer($name:String!,$gstNumber:String,$contactPersonName:S
 `
 
 export const UPDATE_MANUFACTURER = gql`
-mutation updateManufecturer($name:String!,$gstNumber:String!,$contactPersonName:String!,$phoneNumber:String!,$id:ID!){
+mutation updateManufecturer($name:String!,$gstNumber:String,$contactPersonName:String!,$phoneNumber:String!,$id:ID!){
   updateManufecturer(id:$id,input:{
     name:$name
     gstNumber:$gstNumber
     contactPersonName:$contactPersonName
-    phoneNumber:$phoneNumber,
-    city:$city
+    phoneNumber:$phoneNumber
   }){
     manufecturer{
       id
       name
-      address
-      city
       gstNumber
       contactPersonName
       phoneNumber
@@ -2614,11 +2612,15 @@ mutation OrderDraftFinalize($id: ID!) {
 
 export const SET_METAL_RATES = gql`
 mutation setMetalRates(
-  $gold24kPremium: Float!
+  $gold24kPremium: Float!,
+  $silver999kPremium: Float!,
+  $platinum999kPremium: Float!
 ) {
   setMetalRates(
     input: {
-      gold24kPremium: $gold24kPremium
+      gold24kPremium: $gold24kPremium,
+      silver999kPremium: $silver999kPremium,
+      platinum999kPremium: $platinum999kPremium
     }
   ) {
     metalRates {
@@ -2626,6 +2628,8 @@ mutation setMetalRates(
       name
       updatedAt
       gold24kPremium
+      silver999kPremium
+      platinum999kPremium
 }
 }
 }`

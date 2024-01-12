@@ -22,7 +22,7 @@ fragment User on User {
 
 export const PAGE_INFO = gql`
 fragment PageInfoFragment on PageInfo {
-      endCursor
+  endCursor
   hasNextPage
   hasPreviousPage
   startCursor

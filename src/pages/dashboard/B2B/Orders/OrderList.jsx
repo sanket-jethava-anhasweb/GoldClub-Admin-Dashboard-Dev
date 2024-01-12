@@ -1,46 +1,55 @@
-import { useLazyQuery, useMutation } from "@apollo/client";
 import React, { useEffect, useRef, useState } from "react";
-import { GET_ORDER_LIST, SEARCH_ORDER_DETAIL, GET_PAYMENT_PROOF } from "../../../../GraphQl/Query";
-import { Button, Divider, Dropdown, message, Space, Table, Tag } from "antd";
-import { ReloadOutlined, MoreOutlined } from "@ant-design/icons";
-import SectionTitle from "../../../../components/Title/SectionTitle";
-import DisplayPrice from "../../../../components/Utils/DisplayPrice";
-import SearchComponent from "../../../../components/Inputs/Search";
-// import Spinner from "../../../../components/Spinner/Spinner";
-import OrderModal from "../../../../components/Modals/OrderModal";
-// import CustomModal from "../../../../components/Inputs/CustomModal";
+import { Link, useNavigate } from "react-router-dom";
+import { useLazyQuery, useMutation } from "@apollo/client";
+
+
 import {
+   GET_ORDER_LIST, 
+   GET_PAYMENT_PROOF,
+   SEARCH_ORDER_DETAIL
+} from "../../../../GraphQl/Query";
+import {
+  FULFILL_ORDER,
   CANCEL_FULFILLED_ORDER,
   CANCE_REGULAR_ORDER,
-  CREATE_EMPTY_ORDER,
-  FULFILL_ORDER,
+  CANCEL_EMPTY_ORDER,
   MARK_ORDER_PAID,
-  TRANSACTION_UPDATE
 } from "../../../../GraphQl/Mutations";
-import { Link, useNavigate } from "react-router-dom";
+
+import {
+  Button,
+  Divider,
+  Input,
+  Dropdown,
+  Message,
+  Table,
+  Tag,
+  Badge,
+  Space,
+  message,
+  ConfigProvider,
+  theme,
+} from "antd";
+import {
+  ReloadOutlined,
+  MoreOutlined,
+  UploadOutlined
+} from "@ant-design/icons";
+import {
+  AiOutlinedArrowLeft,
+  AiOutlinedArrowRight
+} from "react-icons";
+
+import SectionTitle from "../../../../components/Title/SectionTitle";
+import Search from "../../../../components/Inputs/Search";
+import DisplayPrice from "../../../../components/Utils/DisplayPrice";
 import Loader from "../../../../components/Spinner/Loader";
 
 const OrderList = () => {
-  // const [isModalVisible, setIsModalVisible] = useState(false);
-  // const [selectedImage, setSelectedImage] = useState(null);
-  // const [selectedOption, setSelectedOption] = useState(null);
-  // const [textInputValue, setTextInputValue] = useState("");
-  const [messageApi, contextHolder] = message.useMessage();
-  const [localData, setLocalData] = useState([]);
-  // const [currentOrder, setCurrentOrder] = useState(null);
-  const modalRef = useRef();
+  const { defaultAlgorithm, darkAlgorithm } = theme;
+  const [isDarkMode, setIsDarkMode] = useState(true);
 
-  const [paymentProofData, setPaymentProofData] = useState(null);
-  const [showPaymentProof, setShowPaymentProof] = useState({});
-  const [getPaymentProof, paymentProof] = useLazyQuery(GET_PAYMENT_PROOF, {
-    onCompleted: (data) => {
-      console.log(data);
-      setPaymentProofData(data);
-    },
-    onError: (err) => {
-      console.log(err);
-    },
-  });
+  const [messageApi, contextHolder] = message.useMessage();
   const setTrial = (message) => {
     messageApi.open({
       type: "loading",
@@ -59,43 +68,17 @@ const OrderList = () => {
       content: message,
     });
   };
-  const handleGetPaymentProof = (orderId) => {
-    // Call the getPaymentProof query here using orderId
-    getPaymentProof({
-      variables: {
-        id: orderId,
-      },
-    });
-  };
-  const handleExpandButtonClick = (id) => {
-    // Your logic for handling the button click, for example, fetching additional details
-    console.log(`Expand button clicked for order ID: ${id}`);
-    handleGetPaymentProof(id);
-    console.log(paymentProofData);
-    setShowPaymentProof((prevVisibility) => ({
-      ...prevVisibility,
-      [id]: !prevVisibility[id],
-    }));
-  };
-  useEffect(() => {
-    // Update the paymentProofData object when the query is completed
-    if (paymentProof.data?.orderTransactionHistoryById[0]?.order?.id) {
-      setPaymentProofData((prevData) => ({
-        ...prevData,
-        [paymentProof.data.orderTransactionHistoryById[0].order.id]: paymentProof.data,
-      }));
-    }
-  }, [paymentProof.data]);
-  
+
+  const [currentOrderList, setCurrentOrderList] = useState([]);
   const [fetchOrders, orders] = useLazyQuery(GET_ORDER_LIST, {
     fetchPolicy: "cache-and-network",
     variables: {
-      first: 100,
+      first: 20,
       filter: { created: null },
       sort: { direction: "DESC", field: "NUMBER" },
     },
     onCompleted: (data) => {
-      setLocalData(data?.orders?.edges);
+      setCurrentOrderList(data?.orders?.edges);
       console.log(data);
     },
     onError: (err) => {
@@ -106,17 +89,17 @@ const OrderList = () => {
     fetchPolicy: "cache-and-network",
 
     onCompleted: (data) => {
-      setLocalData(data?.orders?.edges);
+      setCurrentOrderList(data?.orders?.edges);
       console.log(data);
     },
     onError: (err) => {
       setError(err?.message);
     },
   });
-  const navigate = useNavigate();
-  const handleOpenModal = (e) => {
-    modalRef.current.openModal();
-  };
+
+  useEffect(() => {
+    fetchOrders();
+  }, []);
 
   const [markAsPaid, marked] = useMutation(MARK_ORDER_PAID, {
     onCompleted: (data) => {
@@ -182,67 +165,26 @@ const OrderList = () => {
       },
     }
   );
-  const [createDraftOrder, draftOrder] = useMutation(CREATE_EMPTY_ORDER, {
-    variables: { input: {} },
-    onCompleted: (data) => {
-      sessionStorage.setItem("draft-id", data.draftOrderCreate.order.id);
-      navigate("/dashboard/b2b/new-order");
-    },
-    onError: (err) => {
-      console.log(err);
-    },
-  });
-  useEffect(() => {
-    fetchOrders();
-  }, [fetchOrders]);
 
-  const handleSearch = (e) => {
-    let val = e.target.value?.toLowerCase()?.trim();
-    console.log("searching");
-    if (val !== "" || val !== undefined || val !== null) {
-      setLocalData(
-        orders?.data?.orders?.edges?.filter((record) =>
-          Array.from([
-            record?.node?.billingAddress?.firstName,
-            record?.node?.billingAddress?.lastName,
-            record?.node?.billingAddress?.companyName,
-            record?.node?.billingAddress?.city,
-            record?.node?.billingAddress?.cityArea,
-            record?.node?.billingAddress?.postalCode,
-            record?.node?.billingAddress?.phone,
-            record?.node?.billingAddress?.countryArea,
-            record?.node?.billingAddress?.country?.country,
-            record?.node?.status,
-            record?.node?.paymentStatus,
-            record?.node?.number,
-          ])
-            ?.join(", ")
-            ?.toLowerCase()
-            ?.includes(val)
-        )
-      );
-    } else setLocalData(orders?.data?.orders?.edges);
-  };
   const columns = [
+    Table.EXPAND_COLUMN,
     {
-      title: "#",
+      title: "Sl. No",
       dataIndex: ["node", "number"],
       key: "Number",
-      width: 60,
+     width: 10,
       sorter: (a, b) => a?.node?.number - b?.node?.number,
       render: (text, record) => (
-        // <>{record?.node?.created}</>;
-
-        <h3 className='font-semibold text-md'>{text || "N/A"}</h3>
-      ),
+        <h3>{text || "N/A"}</h3>
+      )
     },
     {
       title: "Name",
       dataIndex: "name",
       key: "Name",
-
+      width: 200,
+      // sorter: (a, b) => a?.node?.number - b?.node?.number,
       render: (text, record) => (
-        // <>{record?.node?.created}</>;
         <div className='flex flex-col items-start '>
           <h3 className='font-semibold text-md'>
             {(record?.node?.billingAddress?.firstName || "N/A") +
@@ -259,55 +201,28 @@ const OrderList = () => {
       title: "Phone",
       dataIndex: ["node", "phoneNumber"],
       key: "phone Number",
-
+      width: 20,
       render: (text, record) => (
-        // <>{record?.node?.created}</>;
-
         <h3 className='font-semibold text-md'>{text || "N/A"}</h3>
       ),
     },
-    Table.EXPAND_COLUMN,
     {
       title: "Address",
       dataIndex: "Address",
       key: "Address",
-
+     width: 150,
       render: (text, record) => (
-        // <>{record?.node?.created}</>;
-
         <h3 className='font-semibold text-md'>
           {record?.node?.billingAddress?.city
-            ? record?.node?.billingAddress?.city +
-              ", " +
-              record?.node?.billingAddress?.country?.country
-            : "N/A"}
+            ? record?.node?.billingAddress?.city : "N/A"}
         </h3>
       ),
     },
     {
-      title: "Payment",
-      dataIndex: ["node", "paymentStatus"],
-      key: "Payment",
-      filters: [
-        { value: "NOT_CHARGED", text: "NOT CHARGED" },
-        { value: "FULLY_CHARGED", text: "FULLY CHARGED" },
-      ],
-      onFilter: (value, record) => record?.node?.paymentStatus?.includes(value),
-      render: (text, record) => (
-        // <>{record?.node?.created}</>;
-
-        <Tag
-          className='font-semibold text-md'
-          color={text?.includes("NOT") ? "error" : "green-inverse"}
-        >
-          {text?.replace("_", " ") || "N/A"}
-        </Tag>
-      ),
-    },
-    {
-      title: "Status",
+      title: "Order Status",
       dataIndex: ["node", "status"],
-      key: "Status",
+      key: "Order Status",
+      width: 200,
       filters: [
         { value: "UNFULFILLED", text: "UNFULFILLED" },
         { value: "FULFILLED", text: "FULFILLED" },
@@ -317,26 +232,40 @@ const OrderList = () => {
       filterSearch: true,
       onFilter: (value, record) => record?.node?.status?.includes(value),
       render: (text, record) => (
-        // <>{record?.node?.created}</>;
-
+        <Badge className='font-semibold text-md'
+        color={  
+          text === "UNFULFILLED"
+          ? "yellow"
+          : text === "CANCELED"
+          ? "red"
+          : "green"
+        } text={text?.replace("_", " ") || "N/A"} />
+      ),
+    },
+    {
+      title: "Payment",
+      dataIndex: ["node", "paymentStatus"],
+      key: "Payment",
+    //  width: 40,
+      filters: [
+        { value: "NOT_CHARGED", text: "NOT CHARGED" },
+        { value: "FULLY_CHARGED", text: "FULLY CHARGED" },
+      ],
+      onFilter: (value, record) => record?.node?.paymentStatus?.includes(value),
+      render: (text, record) => (
         <Tag
           className='font-semibold text-md'
-          color={
-            text == "UNFULFILLED"
-              ? "yellow"
-              : text == "CANCELED"
-              ? "error"
-              : "geekblue-inverse"
-          }
+          color={text?.includes("NOT") ? "error" : "green-inverse"}
         >
           {text?.replace("_", " ") || "N/A"}
         </Tag>
-      ),
+      )
     },
     {
       title: "Created At",
       dataIndex: ["node", "created"],
       key: "Created At",
+      width: 150,
       sorter: (a, b) => new Date(a?.node?.created) - new Date(b?.node?.created),
       render: (text, record) => (
         <div className='flex flex-col items-start'>
@@ -353,16 +282,40 @@ const OrderList = () => {
       title: "Total",
       dataIndex: ["node", "total", "gross", "amount"],
       key: "Total",
-      fixed: window?.screen?.width > 640 && "right",
-
+      width: 250,
       render: (text, record) => (
-        <h3 className='font-semibold text-md'>
-          <DisplayPrice price={text} />{" "}
+        <h3 className='font-bold text-sky-500 text-xl'>
+          <DisplayPrice price={Math.ceil(text)} />{" "}
         </h3>
       ),
     },
     {
+      title: "Payment Proof",
+      width: 150,
+      render: (text, record) => {
+        return record?.isUploadedPaymentProof ? (
+          <Button
+            type='Primary'
+            className='inline-flex h-10 text-white bg-blue-500 border-0 py-4 px-6 focus:outline-none hover:bg-indigo-600 rounded text-lg items-center justify-center '
+            onClick={() => fetchOrders()}
+          >
+            Show Payment
+          </Button>
+        ) : (
+          <Button
+            type='default'
+            icon={<UploadOutlined />}
+            className='inline-flex h-10 bg-transparent border py-4 px-6 focus:outline-none hover:bg-indigo-600 rounded text-lg items-center justify-center text-white'
+            onClick={() => fetchOrders()}
+          >
+            Upload Payment
+          </Button>
+        );
+      },
+    },
+    {
       title: "Actions",
+      fixed: window?.screen?.width > 640 && "right",
       render: (text, record) => {
         const items = [
           {
@@ -475,7 +428,7 @@ const OrderList = () => {
             arrow
             trigger={["click"]}
           >
-            <Button>
+            <Button className="flex flex-col justify-center hover:bg-blue-600">
               <MoreOutlined />
             </Button>
           </Dropdown>
@@ -483,145 +436,152 @@ const OrderList = () => {
       },
     },
   ];
+  const expandedRowRender = (record) => {
+    console.log("Record:", record); // Log the entire record to inspect its structure
+    const lines = record?.node?.lines || [];
+    const data = lines.map((line, index) => ({
+      id: line.variant.product.id,
+      key: index,
+      image: line.thumbnail?.url,
+      productName: line.productName,
+      availability: line?.variant?.product?.attributes[1]?.values[0]?.name,
+      category: line?.variant?.category?.name,
+      variantName: line?.variant?.product?.attributes[0]?.values[0]?.name + " " +line?.variant?.product?.attributes[5]?.values[0]?.name + "k",
+      quantity: line?.quantity,
+      quantityFulfilled: line.quantityFulfilled,
+      weight: line?.variantName?.split("/")[3] + "gm",
+      size: line?.variantName?.split("/")[0],
+      total: line?.totalPrice?.gross?.amount
+    }));
+    const columns = [
+      {
+        title: "Product Link",
+        dataIndex: "image",
+        key: "image",
+        width: 150,
+        render: (text, record) => (
+          <a href={window.location.origin + "/dashboard/b2b/products/" + record.id}>
+          <img
+            src={record.image}
+            // alt={line?.thumbnail?.alt}
+            className='h-[100px] w-auto shadow transition ease-in-out delay-150 hover:-translate-y-1 hover:scale-110 hover:bg-indigo-500 duration-300'
+          /></a>
+        ),
+      },
+      {
+        title: "Product Name",
+        dataIndex: "productName",
+        key: "productName",
+        width: 200,
+        render: (text, record) => (
+          <h3 className='font-semibold text-md'>{text || "N/A"}</h3>
+        ),
+      },
+      {
+        title: "Metal",
+        dataIndex: "variantName",
+        key: "variantName",
+        width: 100,
+        render: (text, record) => (
+          <Tag
+          className='font-semibold text-md'
+          color={text?.includes("Gold") ? "yellow" : text?.includes("Silver") ? "silver" : "gray"}
+        >
+          <h3 className='font-semibold text-md'>{text || "N/A"}</h3>
+        </Tag>
+          
+        ),
+      },
+      {
+        title: "Size",
+        dataIndex: "size",
+        key: "size",
+        width: 80,
+      },
+      {
+        title: "Weight",
+        dataIndex: "weight",
+        key: "weight",
+        width: 80,
+      },
+      {
+        title: "Availability",
+        dataIndex: "availability",
+        key: "availability",
+        width: 120,
+      },
+      {
+        title: "Total",
+        dataIndex: "total",
+        key: "total",
+        width: 100,
+        render: (text, record) => (
+          <DisplayPrice price={Math.ceil(text)}/>
+        )
+      },
+      {
+        title: "Quantity",
+        dataIndex: "quantity",
+        key: "quantity",
+        width: 30,
+      },
+      {
+        title: "Fulfilled",
+        dataIndex: "quantityFulfilled",
+        key: "quantityFulfilled",
+        width: 20,
+        render: (text, record) => (
+          <Badge
+          className='font-semibold text-md'
+          color={text > 0 ? "yellow" : text < 0 ? "silver" : "gray"}
+        >
+          <h3 className='font-semibold text-md'>{text}</h3>
+        </Badge>
+          
+        ),
+      },
+    ];
+  
+    
+  
+    console.log("Data:", data); // Log the transformed data
+  
+    return <Table columns={columns}  dataSource={data} pagination={false} size="small"/>;
+  };
   return (
-    <section className='py-4'>
-      {contextHolder}
-      <SectionTitle title='Order History' />
-      <Divider className='dark:bg-white/10' />
-      {/* <OrderModal order={currentOrder} ref={modalRef} /> */}
-      {/* {orders?.loading && <Spinner />} */}
-      <button
-        class='inline-flex items-center text-white bg-indigo-500 border-0 py-2 px-6 focus:outline-none hover:bg-indigo-600 rounded text-md my-4'
-        onClick={createDraftOrder}
-      >
-        {draftOrder?.loading && <Loader />} Create order
-      </button>
-      <div className='flex flex-col md:flex-row flex-wrap w-full items-start md:items-center justify-start md:justify-around mb-3 '>
-        <div className='w-full md:w-10/12'>
-          <SearchComponent
-            handleSearch={handleSearch}
-            className='dark:text-slate-200 dark:bg-slate-500'
-          />
-        </div>
-        <div className='w-full md:w-2/12 mb-4'>
-          <Button
-            type='Primary'
-            className='inline-flex h-10 text-white bg-blue-500 border-0 py-4 px-6 focus:outline-none hover:bg-indigo-600 rounded text-lg items-center justify-center '
-            onClick={() => fetchOrders()}
-          >
-            <ReloadOutlined />
-          </Button>
-        </div>
-      </div>
-      <Table
-        dataSource={localData || orders?.data?.orders?.edges}
-        columns={columns}
-        rowKey={(record) => record?.node?.id}
-        exportable
-        searchable
-        scroll={{
-          x: "auto",
-        }}
-        sticky
-        loading={orders?.loading}
-        expandable={{
-          expandedRowRender: (record) => (
-            <>
-              <p>
-                <span className='font-bold'>Full Address: </span>
-                {record?.node?.billingAddress &&
-                  Array.from([
-                    record?.node?.billingAddress?.streetAddress1,
-                    record?.node?.billingAddress?.streetAddress2,
-                    record?.node?.billingAddress?.city,
-                    record?.node?.billingAddress?.cityArea,
-                    record?.node?.billingAddress?.countryArea,
-                    record?.node?.billingAddress?.postalCode,
-                    record?.node?.billingAddress?.country?.country,
-                  ]).join(" ")}
-              </p>
-              <div className='flex flex-col'>
-                <span className='font-bold'>Products: </span>
-                {record?.node?.lines?.map((line) => (
-                  <Link
-                    to={"/dashboard/b2b/products/" + line?.variant?.product?.id}
-                    className='flex gap-2 w-[70%]'
-                  >
-                    <img
-                      src={line?.thumbnail?.url}
-                      alt={line?.thumbnail?.alt}
-                      className='h-auto w-1/12'
-                    />
-                    <div className='flex flex-col w-2/5'>
-                      <span className='font-semibold'>{line?.productName}</span>
-                      <span className='max-w-lg'>
-                        size: {line?.variantName?.split("/")[0]}
-                      </span>
-                      <span className='max-w-lg'>
-                        color:{" "}
-                        {line?.variant?.product?.attributes[9]?.values[0]?.name}
-                      </span>
-                      <span className='max-w-lg'>
-                        Purity:{" "}
-                        {line?.variant?.product?.attributes[5]?.values[0]?.name}
-                      </span>
-                    </div>
+    <>
+      <section className="py-1">
+        <SectionTitle title="All Orders" />
+        <Divider className="dark:bg-slate-600"/>
+      </section>
 
-                    <div className='flex flex-col w-1/5'>
-                      <span className='font-semibold'>
-                        Quantity: {line?.quantity}
-                      </span>
-                      <span className='font-semibold'>
-                        Fulfilled:{line?.quantityFulfilled}
-                      </span>
-                    </div>
-                    <div className='flex flex-col w-1/5'>
-                      <span className='font-semibold'>Total Price:</span>
-                      <span className='font-semibold'>
-                        <DisplayPrice price={line?.totalPrice?.net?.amount} />
-                      </span>
-                    </div>
-                  </Link>
-                ))}
-                <div class="w-full mt-5 flex flex-row justify-evenly align-center">
-                {showPaymentProof[record.node.id] && (
-                <>
-                  <a
-                    className="h-auto w-1/12"
-                    href={paymentProofData?.orderTransactionHistoryById[0]?.transactionProof}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    <img
-                      
-                      src={paymentProofData?.orderTransactionHistoryById[0]?.transactionProof}
-                      alt="Transaction Proof"
-                    />
-                  </a>
-                  <p className="flex flex-col justify-center text-center"><b>Transaction Mode:</b> <br/> <b className="text-xl">{paymentProofData?.orderTransactionHistoryById[0]?.transactionMode}</b></p>
-                  <p className="flex flex-col justify-center text-center"><b>Customer Note:</b> <br/> <b className="text-xl">{paymentProofData?.orderTransactionHistoryById[0]?.customerNote}</b></p>
-                  {/* Other elements related to payment proof */}
-                </>
-              )}
-                <button
-                className="bg-blue h-60px w-120px"
-                type="primary"
-                onClick={() => {
-                  handleExpandButtonClick(record.node.id);
-                  // setShowPaymentProof(true); // Set state to true on button click
-                }}              >
-                Get Payment Proof
-              </button>
-              </div>
-              </div>
-              
-            </>
-          ),
-          rowExpandable: (record) => record?.node?.billingAddress !== null,
-        }}
-      />
-    </section>
-  );
+      <section className="w-full">
+        <div>
+        <Search />
+        </div>
+        {/* <div>
+        <Dropdown
+        trigger={["click"]}
+        >
+          <Button />
+        </Dropdown>
+        </div> */}
+      </section>
+      <section>
+      <ConfigProvider theme={{
+      algorithm: isDarkMode ? darkAlgorithm : defaultAlgorithm,
+    }}>
+        <Table
+          columns={columns}
+          rowKey={(record) => record?.node?.id}
+          expandable={{ expandedRowRender, defaultExpandedRowKeys: ['0'] }}
+          dataSource={currentOrderList}
+          pagination={false}
+          size="medium"
+        />
+      </ConfigProvider>
+      </section>
+    </>
+  )
 };
-
 export default OrderList;

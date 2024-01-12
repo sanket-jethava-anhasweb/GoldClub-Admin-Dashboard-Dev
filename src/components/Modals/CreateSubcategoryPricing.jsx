@@ -14,6 +14,7 @@ import {
   GET_ASSIGNMENT_CARAT,
   GET_ASSIGNMENT_SUBCATEGORY,
 } from "../../GraphQl/Query";
+import { Input } from "antd";
 
 const Modal = (props, ref) => {
   const [modalState, setModalState] = useState(false);
@@ -307,24 +308,20 @@ const Modal = (props, ref) => {
               />
             </div>
             <div className='w-full md:w-3/5'>
-            <InputComponent
+            <Input
+              type="text"
               required={true}
               placeholder='Enter Making Charge'
               // maxLength={30}
-              // editable
-              value={props?.manufacturer?.makingCharge}  // Set default value to an empty string
               title='Making Charge *'
-              showCount={true}
-              handleChange={(e) => {
-                // No need for setManufacturerVar here if you're directly updating the state
-                console.log(e.target.value);
+              value={manufacturerVar?.makingCharge}
+              onChange={(e) => {
                 setManufacturerVar({
                   ...manufacturerVar,
                   makingCharge: e.target.value,
                 });
               }}
               className='bg-transparent'
-              allowClear={true}
             />
               {/* <TextAreaComponent
                 required={true}
@@ -369,7 +366,7 @@ const Modal = (props, ref) => {
                 required={true}
                 value={props?.manufacturer?.wastageChargeMode}
                 options={[
-                  { val: "percentage", name: "Percentage" },
+                  { val: "percent", name: "Percentage" },
                   { val: "rspergram", name: "Rs. per gram" },
                   { val: "flat", name: "Flat" },
                 ].map((cat) => ({
@@ -385,22 +382,21 @@ const Modal = (props, ref) => {
               />
             </div>
             <div className='w-full md:w-3/5'>
-              <InputComponent
-                required={true}
-                placeholder='Enter Wastage Charge'
-                // maxLength={30}
-                title='Wastage Charge *'
-                showCount={true}
-                value={props?.manufacturer?.wastageCharge}
-                handleChange={(e) => {
-                  setManufacturerVar({
-                    ...manufacturerVar,
-                    wastageCharge: e.target.value,
-                  });
-                }}
-                className='bg-transparent'
-                allowClear={true}
-              />
+            <Input
+              type="text"
+              required={true}
+              placeholder='Enter Wastage Charge'
+              // maxLength={30}
+              title='Wastage Charge *'
+              value={manufacturerVar?.wastageCharge}
+              onChange={(e) => {
+                setManufacturerVar({
+                  ...manufacturerVar,
+                  wastageCharge: e.target.value,
+                });
+              }}
+              className='bg-transparent'
+            />
             </div>
           </div>
         </div>

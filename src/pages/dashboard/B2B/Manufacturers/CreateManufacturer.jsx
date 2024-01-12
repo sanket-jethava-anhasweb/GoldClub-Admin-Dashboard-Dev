@@ -66,9 +66,11 @@ const CreateManufacturer = () => {
       !manufacturerVar?.name ||
       !manufacturerVar?.phoneNumber ||
       !manufacturerVar?.contactPersonName ||
+      !manufacturerVar?.address || 
       manufacturerVar?.name == "" ||
       manufacturerVar?.phoneNumber == "" ||
-      manufacturerVar?.contactPersonName == ""
+      manufacturerVar?.contactPersonName == "" ||
+      manufacturerVar?.address == ""
     ) {
       setError("Please enter all required fields");
       return;
