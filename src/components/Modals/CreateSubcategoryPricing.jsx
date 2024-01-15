@@ -292,7 +292,7 @@ const Modal = (props, ref) => {
                 required={true}
                 value={props?.manufacturer?.makingChargeMode || null}
                 options={[
-                  { val: "percent", name: "Percentage" },
+                  { val: "PERCENT", name: "Percentage" },
                   { val: "rspergram", name: "Rs. per gram" },
                   { val: "flat", name: "Flat" },
                 ].map((cat) => ({
@@ -366,7 +366,7 @@ const Modal = (props, ref) => {
                 required={true}
                 value={props?.manufacturer?.wastageChargeMode}
                 options={[
-                  { val: "percent", name: "Percentage" },
+                  { val: "PERCENT", name: "Percentage" },
                   { val: "rspergram", name: "Rs. per gram" },
                   { val: "flat", name: "Flat" },
                 ].map((cat) => ({

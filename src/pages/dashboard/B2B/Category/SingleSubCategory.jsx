@@ -213,6 +213,7 @@ const SingleSubCategory = () => {
     GET_ALL_PRODUCTS_FILTERED,
     {
       variables: {
+        first : 100,
         filter: {
           search: null,
           categories: params?.id,
@@ -398,7 +399,7 @@ const SingleSubCategory = () => {
               <img
                 src={subcategoryData?.data?.category?.backgroundImage?.url}
                 alt={subcategoryData?.data?.category?.backgroundImage?.alt}
-                className='w-full lg:w-2/4'
+                className='w-50 h-50 mx-auto block'
               />
       )}</div>
       </div>

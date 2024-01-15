@@ -449,7 +449,7 @@ const OrderList = () => {
       variantName: line?.variant?.product?.attributes[0]?.values[0]?.name + " " +line?.variant?.product?.attributes[5]?.values[0]?.name + "k",
       quantity: line?.quantity,
       quantityFulfilled: line.quantityFulfilled,
-      weight: line?.variantName?.split("/")[3] + "gm",
+      weight: line?.variantName?.split("/")[7] + "gm",
       size: line?.variantName?.split("/")[0],
       total: line?.totalPrice?.gross?.amount
     }));

@@ -93,6 +93,7 @@ const AddProduct = () => {
   const [height, setHeight] = useState('');
   const [width, setWidth] = useState('');
 
+
  const [otherGemstoneDetails, setOtherGemstoneDetails] = useState(
     {
       name: "",
@@ -1961,7 +1962,7 @@ const AddProduct = () => {
                       }}
                       className='w-full md:w-[46%]'
                     /> */}
-                    {/* <SelectComponent
+                    <SelectComponent
                       placeholder={"Select is common wastage charge"}
                       title={"Is common wastage charge *"}
                       required={true}
@@ -1977,7 +1978,7 @@ const AddProduct = () => {
                         });
                       }}
                       className='w-full md:w-[46%]'
-                    /> */}
+                    />
                     {/* {productVar?.attributes[8]?.values &&
                       productVar?.attributes[8]?.values[0] == "Studded" && (
                         <div className='flex flex-col items-start w-full md:w-[46%]'>
@@ -2773,7 +2774,7 @@ const AddProduct = () => {
             {/* if(primaryDiamond) */}
            <Button
             type='primary'
-            disabled={metalType === 'none' || gender === 'none' || community === '' || occassion === 'none' || carats === '' || colors === '' || sizes === '' || height === '' || width === '' || primaryCarat === ''}
+            disabled={metalType === 'none' || gender === 'none' || community === '' || occassion === 'none' || carats === '' || colors === '' || sizes === '' || primaryCarat === ''}
             className='text-white bg-indigo-500 border-0 w-[96%] md:w-max md:px-8 focus:outline-none hover:bg-indigo-600 hover:text-white rounded text-md m-2 duration-150 disabled:bg-indigo-300 disabled:text-white disabled:hover:bg-indigo-300'
             onClick={handleSubmit}
           >
