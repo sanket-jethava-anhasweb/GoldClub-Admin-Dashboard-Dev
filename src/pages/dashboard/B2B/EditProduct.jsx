@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useLazyQuery, useMutation } from "@apollo/client";
 import { useNavigate, useParams } from "react-router-dom";
 
-import { GET_PROD_BY_ID_UPDATE_PRODUCT, GET_CATEGORY_METADATA } from "../../../GraphQl/Query";
+import { GET_PROD_BY_ID_UPDATE_PRODUCT, GET_CATEGORY_METADATA, GET_MANU_LIST } from "../../../GraphQl/Query";
 import { UPDATE_PRODUCT } from "../../../GraphQl/Mutations";
 
 import { Button, Card, Divider, message } from "antd";
@@ -69,11 +69,21 @@ const EditProduct = () => {
           visibleInListings: productData?.visibleInListings,
           sku: productData?.variants?.sku,
         });
+
         fetchCategoryData({
           variables: {
             id: data.product.category.id
           }
         });
+
+        //manufacturer
+
+        // fetchManufacturerData({
+        //   variables: {
+        //     subCategoryId: data.product.category.id
+        //   }
+        // });
+        
         setMetalType(productData.attributes[0].values[0].name);
       },
       onError: (err) => {
@@ -90,6 +100,20 @@ const EditProduct = () => {
       setAttributeOptions((prevOptions) => [...prevOptions, ...fetchedMetadata]);
     },
   });
+
+  //manufacturer
+
+  // const [fetchManufacturerData] = useLazyQuery(GET_MANU_LIST, {
+  //   onCompleted: (manuList) => {
+  //     const fetchedManuList = manuList.manufecturerAssignmentsBySubCategory.map((item) => ({
+  //       key: item.id,
+  //       value: item.manufacturer.name,
+  //     }));
+  //     setAttributeOptions((prevOptions) => [...prevOptions, ...fetchedManuList]);
+  //     console.log("This is the ManuList: ", manuList);
+  //   },
+  // });
+  
 
   const parseJsonString = (jsonString) => {
     try {
@@ -203,10 +227,13 @@ const EditProduct = () => {
     },
     "product-width": {
       type: "input"
-    },
+    }
   };
 
   const renderAttribute = (attr) => {
+
+    //console.log(attr)
+
     let attributeSlug = attr.attribute.slug;
 
     if (["gold-color", "silver-color", "platinum-color"].includes(attributeSlug)) {

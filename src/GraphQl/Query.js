@@ -1950,6 +1950,24 @@ query ProductVariantCreateData($id: ID!) {
  }
 }`
 
+
+export const GET_MANU_LIST = gql`
+query manufecturerAssignmentListBysubcategory($subCategoryId:ID!){
+  manufecturerAssignmentsBySubCategory(subCategoryId:$subCategoryId){
+    id
+    manufacturer{
+      id
+      name
+    }
+    makingChargeMode
+    makingCharge
+    wastageChargeMode
+    wastageCharge
+  }
+}
+`
+
+
 export const GET_MANUFACTURERS_ASSIGNMENT_LIST = gql`
 query manufecturerAssignmentListBysubcategory($subCategoryId:ID!){
   manufecturerAssignmentsBySubCategory(subCategoryId:$subCategoryId){
