@@ -26,12 +26,6 @@ const antIcon = (
 const CategoryCard = ({ category, loading }) => {
   const [edit, setEdit] = useState(true);
 
-  //   const handleChange = (e) => {
-  //     let val = e.target.value;
-  //     if (edit && (val === "" || val === undefined || val === null || val < 0))
-  //       setValue(0);
-  //     else setValue(val);
-  //   };
   return (
     <Card
       title={<span className='dark:text-white'>{category?.node?.name}</span>}

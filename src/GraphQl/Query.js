@@ -1304,6 +1304,7 @@ fragment AddressFragment on Address {
   companyName
   country {
     country
+    __typename
   }
   countryArea
   firstName
@@ -1312,6 +1313,7 @@ fragment AddressFragment on Address {
   postalCode
   streetAddress1
   streetAddress2
+  __typename
 }
 
 query OrderList($first: Int!, $after: String, $last: Int, $before: String, $filter: OrderFilterInput, $sort: OrderSortingInput) {
@@ -1327,6 +1329,7 @@ query OrderList($first: Int!, $after: String, $last: Int, $before: String, $filt
       node {
         billingAddress {
           ...AddressFragment
+          __typename
         }
         created
         id
@@ -1344,6 +1347,7 @@ query OrderList($first: Int!, $after: String, $last: Int, $before: String, $filt
           id
           productName
           variantName
+          
           quantity
           quantityFulfilled
           variant {
@@ -1351,58 +1355,87 @@ query OrderList($first: Int!, $after: String, $last: Int, $before: String, $filt
             name
             product {
               id
+              variants {
+                attributes {
+                  values {
+                    name
+                  }
+                }
+              }
               attributes {
-                values {
+                attribute {
                   name
                 }
+                values {
+                  name
+                  __typename
+                }
+                __typename
               }
               category {
                 name
+                __typename
               }
+              __typename
             }
+            __typename
           }
           thumbnail {
             url
             alt
+            __typename
           }
           unitPrice {
             currency
             gross {
               currency
               amount
+              __typename
             }
+            __typename
           }
           totalPrice {
             currency
             gross {
               currency
               amount
+              __typename
             }
             net {
               currency
               amount
+              __typename
             }
             tax {
               currency
               amount
+              __typename
             }
+            __typename
           }
+          __typename
         }
         total {
           gross {
             amount
             currency
+            __typename
           }
+          __typename
         }
         phoneNumber
+        __typename
       }
+      __typename
     }
     pageInfo {
       hasPreviousPage
       hasNextPage
       startCursor
       endCursor
+      __typename
     }
+    __typename
   }
 }
 `

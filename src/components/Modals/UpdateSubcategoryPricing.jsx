@@ -19,7 +19,15 @@ import {
 } from "../../GraphQl/Query";
 
 const UpdateModal = (props, ref) => {
-  const [updateData,setUpdateData] = useState(props);
+  const [updateData,setUpdateData] = useState({
+    categoryPricingId : null,
+    name: null,
+    carat: null,
+    makingCharge: null,
+    makingChargeMode: null,
+    wastageCharge: null,
+    wastageChargeMode: null,
+  });
   const [modalState, setModalState] = useState(false);
   const [manufacturerVar, setManufacturerVar] = useState(null);
   const [error, setError] = useState("");
@@ -46,21 +54,18 @@ const UpdateModal = (props, ref) => {
     }
   );
 
-  const [getCarats, carats] = useLazyQuery(GET_ASSIGNMENT_CARAT, {
-    onError: (err) => {
-      setError(err.message);
-    },
-  });
-  const [getColors, colors] = useLazyQuery(GET_ASSIGMENT_COLOR, {
-    onError: (err) => {
-      setError(err.message);
-    },
-  });
-
   const [updateManufacturer, updatedManufacturer] = useMutation(
     UPDATE_SUBCATEGORY_PRICING,
     {
-      variables: manufacturerVar,
+      variables: {
+        categoryPricingId : updateData.id,
+        name: updateData.name,
+        carat: updateData.carat,
+        makingCharge: updateData.makingCharge,
+        makingChargeMode: updateData.makingChargeMode,
+        wastageCharge: updateData.wastageCharge,
+        wastageChargeMode: updateData.wastageChargeMode,
+      },
       onCompleted: (data) => {
         console.log(data);
         if (data?.updateManufecturer?.manufecturer) setModalState(false);
@@ -76,7 +81,7 @@ const UpdateModal = (props, ref) => {
   const handleUpdate = () => {
     setError("");
 
-    // updateManufacturer();
+    updateManufacturer();
   console.log("props line 777",updateData);
   };
   console.log("props line 78",props);
@@ -124,45 +129,13 @@ const UpdateModal = (props, ref) => {
               placeholder='Enter Making Charge'
               // maxLength={30}
               // editable
-              value={updateData?.makingCharge || null}  // Set default value to an empty string
+              defaultValue={updateData?.makingCharge || 0}  // Set default value to an empty string
               title='Making Charge *'
-              showCount={true}
+              // showCount={true}
               handleChange={(e) => OnChange(e)}
               className='bg-transparent'
-              allowClear={true}
+              // allowClear={true}
             />
-              {/* <TextAreaComponent
-                required={true}
-                placeholder="Enter Product Description"
-                // maxLength={30}
-                title="Product Description"
-                showCount={true}
-              /> */}
-            {/* </div> */}
-            {/* <div className='w-full md:w-4/5'>
-              <InputComponent
-                required={true}
-                placeholder='Enter Making Days'
-                maxLength={30}
-                value={props?.manufacturer?.makingDays || null}
-                title='Making Days *'
-                showCount={true}
-                handleChange={(e) => {
-                  setManufacturerVar({
-                    ...manufacturerVar,
-                    makingDays: e.target.value,
-                  });
-                }}
-                className='bg-transparent'
-                allowClear={true}
-              /> */}
-              {/* <TextAreaComponent
-                required={true}
-                placeholder="Enter Product Description"
-                // maxLength={30}
-                title="Product Description"
-                showCount={true}
-              /> */}
             </div>
             {/* WASTAGE */}
             
@@ -190,16 +163,15 @@ const UpdateModal = (props, ref) => {
                 placeholder='Enter Wastage Charge'
                 // maxLength={30}
                 title='Wastage Charge *'
-                showCount={true}
-                value={updateData?.wastageCharge}
+                // showCount={true}
+                defaultValue={updateData?.wastageCharge}
                 handleChange={(e) => {
                   let temp = e.target.value;
-                  let tempData = updateData;
-                  tempData.wastageCharge = temp;
-                  setUpdateData(tempData);
+                  
+                  setUpdateData(e.target.value);
                 }}
                 className='bg-transparent'
-                allowClear={true}
+                // allowClear={true}
               />
             </div>
           </div>

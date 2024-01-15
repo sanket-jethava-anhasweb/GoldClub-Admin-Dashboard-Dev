@@ -29,6 +29,7 @@ import {
   message,
   ConfigProvider,
   theme,
+  FloatButton
 } from "antd";
 import {
   ReloadOutlined,
@@ -39,6 +40,7 @@ import {
   AiOutlinedArrowLeft,
   AiOutlinedArrowRight
 } from "react-icons";
+import { AiOutlineArrowLeft, AiOutlineArrowRight } from "react-icons/ai";
 
 import SectionTitle from "../../../../components/Title/SectionTitle";
 import Search from "../../../../components/Inputs/Search";
@@ -68,6 +70,11 @@ const OrderList = () => {
       content: message,
     });
   };
+
+  const [cursor, setCursor] = useState({});
+  const [page, setPage] = useState({
+    hasPreviousPage: false, hasNextPage: true
+  });
 
   const [currentOrderList, setCurrentOrderList] = useState([]);
   const [fetchOrders, orders] = useLazyQuery(GET_ORDER_LIST, {
@@ -440,17 +447,17 @@ const OrderList = () => {
     console.log("Record:", record); // Log the entire record to inspect its structure
     const lines = record?.node?.lines || [];
     const data = lines.map((line, index) => ({
-      id: line.variant.product.id,
+      id: line?.variant?.product?.id,
       key: index,
-      image: line.thumbnail?.url,
-      productName: line.productName,
+      image: line?.thumbnail?.url,
+      productName: line?.productName,
       availability: line?.variant?.product?.attributes[1]?.values[0]?.name,
       category: line?.variant?.category?.name,
       variantName: line?.variant?.product?.attributes[0]?.values[0]?.name + " " +line?.variant?.product?.attributes[5]?.values[0]?.name + "k",
       quantity: line?.quantity,
-      quantityFulfilled: line.quantityFulfilled,
-      weight: line?.variantName?.split("/")[7] + "gm",
-      size: line?.variantName?.split("/")[0],
+      quantityFulfilled: line?.quantityFulfilled,
+      weight: line?.variant?.product?.variants[0]?.attributes[6]?.values[0]?.name + " gm",
+      size: line?.variant?.product?.variants[0]?.attributes[0]?.values[0]?.name,
       total: line?.totalPrice?.gross?.amount
     }));
     const columns = [
@@ -580,6 +587,35 @@ const OrderList = () => {
           size="medium"
         />
       </ConfigProvider>
+      </section>
+      <section className='px-4 flex justify-center '>
+        <div class="w-full flex justify-between">
+        <FloatButton icon={<AiOutlineArrowLeft />} type="primary"
+              onClick={() => {
+                fetchOrders({
+                  variables: {
+                    first: 0,
+                    last: 20,
+                    before: cursor.sCursor,
+                    filter: { created: null },
+                    sort: { direction: "ASC", field: "NUMBER" }}
+                })
+              }}
+              style={{right: 120}}
+              />
+        <FloatButton icon={<AiOutlineArrowRight />} type="primary"
+                  onClick={() => {
+                    fetchOrders({
+                      variables: {
+                        first: 20,
+                        after: cursor.eCursor,
+                        filter: { created: null },
+                        sort: { direction: "ASC", field: "NUMBER" }}
+                    })
+                  }}
+                  style={{right: 60}}
+              />
+        </div>
       </section>
     </>
   )

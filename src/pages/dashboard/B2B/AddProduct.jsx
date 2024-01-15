@@ -2177,9 +2177,8 @@ const AddProduct = () => {
                         placeholder={"Enter wastage charge"}
                         title={"Wastage Charge Product"}
                         loading={types?.loading}
-                        disabled
                         // options={attributeList[31]?.options}
-                        value={subcategoryPrice?.wastageCharge}
+                        dwfaultValue={subcategoryPrice?.wastageCharge}
                         onChange={(e) => {
                           console.log(e);
                           let tempData = structuredClone(

@@ -1,0 +1,147 @@
+
+.checkbox {
+    opacity: 0;
+    position: absolute;
+}
+
+.checkbox-label {
+    background-color: #111;
+    width: 50px;
+    height: 26px;
+    border-radius: 50px;
+    position: relative;
+    padding: 5px;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+
+
+.checkbox-label .ball {
+    background-color: #fff;
+    width: 22px;
+    height: 22px;
+    position: absolute;
+    left: 2px;
+    top: 2px;
+    border-radius: 50%;
+    transition: transform 0.2s linear;
+}
+
+.checkbox:checked+.checkbox-label .ball {
+    transform: translateX(24px);
+}
+
+.ant-input
+{
+    background: transparent;
+}
+.antdSelect .ant-select-selector ,.ant-input-number
+{
+    background: transparent !important ;
+}
+.dark.antdSelect .ant-select-selector {
+    color: #fff ;
+}
+.dark .ant-select-selection-placeholder, .dark .ant-select-arrow,.dark .ant-input-number-input,.dark .ant-input-number-input::placeholder,.dark .ant-input-number-group-addon,.dark .ant-input,.dark .ant-input::placeholder,.dark.ant-empty-description
+{
+    color: #fff  ;
+
+}
+
+.dark #publishDate  ,.dark .ant-picker-suffix,.dark .ant-select-selection-item
+{
+    color: #fff !important;
+}
+.dark #publishDate::placeholder
+{
+    color: #dbdbdb;
+}
+
+.dark .ck-editor__main>*,.dark .ck-toolbar,.dark .ck-toolbar *
+{
+    background: rgb(30 41 59 ) !important;color: #fff !important;
+}
+
+.dark .ant-steps-small .ant-steps-item-icon
+{
+    background: #eee;
+}
+.dark .ant-steps-item-active .ant-steps-item-icon , .dark .ant-steps-item-finish .ant-steps-item-icon,.dark .ant-steps-item-finish .ant-steps-item-icon span,.dark .ant-select-multiple .ant-select-selection-item
+,.dark.priceCard.ant-input-affix-wrapper.ant-input-suffix
+{
+    background: #007bff;
+    color: #fff;
+}
+.ant-steps-item-finish .ant-steps-item-icon span
+{
+    background: transparent;
+    margin-top: -12px;
+}
+
+.dark .ant-steps .ant-steps-item-process>.ant-steps-item-container>.ant-steps-item-content>.ant-steps-item-title::after,.dark .ant-steps .ant-steps-item-wait>.ant-steps-item-container>.ant-steps-item-content>.ant-steps-item-title::after
+{
+    background-color: #ffffff33 !important;
+}
+
+.products .ant-card-body 
+{
+    padding: 0;
+}
+
+.dark .ant-pagination .ant-pagination-item a
+{
+    color: #919191 !important;
+    border: #fff !important;
+}
+.dark .ant-pagination-item-link svg
+{
+    color: #fff;
+}
+.ant-card-body
+{
+width: 100% !important;
+}
+
+.loader {
+    width: 18px;
+    height: 18px;
+    border: 2px solid #FFF;
+    border-bottom-color: transparent;
+    border-radius: 50%;
+    display: inline-block;
+    box-sizing: border-box;
+    animation: rotation 1s linear infinite;
+}
+
+@keyframes rotation {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+.variantTable
+td,.variantTable
+th {
+    border: 1px solid #777;
+    padding: 0.5rem;
+    text-align: center;
+}
+
+.variantTable{
+    border-collapse: collapse;
+}
+
+.variantTable tbody tr:nth-child(odd) {
+    background: #eee;
+}
+
+html.dark .variantTable tbody tr {
+    background: #001529;
+}
