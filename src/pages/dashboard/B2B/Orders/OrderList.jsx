@@ -371,7 +371,7 @@ const OrderList = () => {
                               {
                                 quantity: line?.quantity,
                                 warehouse:
-                                  "V2FyZWhvdXNlOmE3ZGM0YzRhLTZhYjAtNDQ4ZS1iZDRiLTJiOTcyNTI3NTkxNw==",
+                                  "V2FyZWhvdXNlOjk3OWZjM2E0LTljMTctNDgzNi1iMjI3LWZmMmMwMDExMGMzOQ==",
                               },
                             ],
                           })),
@@ -407,7 +407,7 @@ const OrderList = () => {
                         id: record?.node?.fulfillments[0]?.id,
                         input: {
                           warehouseId:
-                            "V2FyZWhvdXNlOmE3ZGM0YzRhLTZhYjAtNDQ4ZS1iZDRiLTJiOTcyNTI3NTkxNw==",
+                            "V2FyZWhvdXNlOjk3OWZjM2E0LTljMTctNDgzNi1iMjI3LWZmMmMwMDExMGMzOQ==",
                         },
                       },
                     });

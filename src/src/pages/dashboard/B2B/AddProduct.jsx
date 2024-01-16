@@ -785,7 +785,7 @@ const AddProduct = () => {
                           {
                             quantity: quantity ?? 100, // intially set with 0
                             warehouse:
-                              "V2FyZWhvdXNlOmE3ZGM0YzRhLTZhYjAtNDQ4ZS1iZDRiLTJiOTcyNTI3NTkxNw==",
+                              "V2FyZWhvdXNlOjk3OWZjM2E0LTljMTctNDgzNi1iMjI3LWZmMmMwMDExMGMzOQ==",
                           },
                         ],
                         trackInventory: true,

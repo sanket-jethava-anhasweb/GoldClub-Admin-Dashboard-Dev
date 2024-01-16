@@ -427,9 +427,9 @@ const AddProduct = () => {
     temp.attributes[25].values = false;
     temp.attributes[12].values = [];
     temp.attributes[21].values = false;
-    temp.attributes[22].values = false;
-   
-    setProductVar(()=>temp)
+    temp.attributes[22].values = true;
+    console.log("Line 431 temp", temp)
+    // setProductVar(()=>temp)
     createProduct({
       variables: {
         input: {
@@ -449,7 +449,7 @@ const AddProduct = () => {
           productType: queries?.typeQuery,
           publicationDate: productVar?.publicationDate,
           seo: { description: "", title: "" },
-          visibleInListings: productVar?.visibleInListings,
+          visibleInListings: true,
         },
       },
 
@@ -473,10 +473,12 @@ const AddProduct = () => {
           });
           
 
-          let tempAttr = structuredClone(productVar);
+          // let tempAttr = structuredClone(temp);
+          let tempAttr = temp;
           tempAttr.attributes[18].values[0] = data?.productCreate.product?.id;
           // tempAttr.attributes[33].values[0] = productVar?.height;
           // tempAttr.attributes[34].values[0] = productVar?.width;
+          console.log("Line 477 tempAttr", tempAttr)
           setProductVar(tempAttr);
           setNewParent(tempAttr.attributes[18].values[0])
           setCurrentStep(2);
@@ -640,7 +642,9 @@ const AddProduct = () => {
               JSON.stringify(hallmark) !== JSON.stringify(["false"])
                 ? ["true"]
                 : ["false"];
-            let temp = structuredClone(productVar);
+          let temp = structuredClone(productVar);
+          console.log("subcategoryPricing", subcategoryPricing.data.categoryPrice[0])
+          console.log("before temp.attributes", temp.attributes);
             temp.attributes[0].values = metalType;
             temp.attributes[8].values = studdedType;
             temp.attributes[5].values = carat;
@@ -652,12 +656,12 @@ const AddProduct = () => {
             temp.attributes[25].values = true;
             temp.attributes[12].values = [];
             temp.attributes[21].values = false;
-            temp.attributes[22].values = false;
-            temp.attributes[26].values = subcategoryPricing.makingChargeMode;
-            temp.attributes[27].values = subcategoryPricing.wastageChargeMode;
-            temp.attributes[30].values = subcategoryPricing.makingCharge;
-            temp.attributes[31].values = subcategoryPricing.wastageCharge;
-            console.log(temp.attributes[9]);
+          temp.attributes[22].values = true;
+          // temp.attributes[26].values = subcategoryPricing.makingChargeMode;
+          // temp.attributes[27].values = subcategoryPricing.wastageChargeMode;
+          // temp.attributes[30].values = subcategoryPricing.makingCharge;
+          // temp.attributes[31].values = subcategoryPricing.wastageCharge;
+          console.log("temp.attributes", temp.attributes);
 
             await createProduct({
               variables: {
@@ -685,27 +689,27 @@ const AddProduct = () => {
               },
 
               // eslint-disable-next-line no-loop-func
-              onCompleted: (data) => {
+              onCompleted: async (data) => {
                 if (data?.productCreate?.product) {
                   console.log(
                     data.productCreate?.product?.attributes[18]?.values[0]?.name
                   );
                   if (fileList[0])
-                    uploadImage({
+                    await uploadImage({
                       variables: {
                         alt: fileList[0]?.name,
                         image: fileList[0],
                         product: data?.productCreate?.product?.id,
                       },
                     });
-                  setAvailablility({
+                  await setAvailablility({
                     variables: {
                       isAvailable: true,
                       productId: data?.productCreate.product?.id,
                       startDate: null,
                     },
                   });
-                  saveVariants({
+                  await saveVariants({
                     variables: {
                       input: {
                         attributes: [
@@ -785,7 +789,7 @@ const AddProduct = () => {
                           {
                             quantity: quantity ?? 100, // intially set with 0
                             warehouse:
-                              "V2FyZWhvdXNlOmE3ZGM0YzRhLTZhYjAtNDQ4ZS1iZDRiLTJiOTcyNTI3NTkxNw==",
+                              "V2FyZWhvdXNlOjk3OWZjM2E0LTljMTctNDgzNi1iMjI3LWZmMmMwMDExMGMzOQ==",
                           },
                         ],
                         trackInventory: true,
@@ -831,14 +835,14 @@ const AddProduct = () => {
                   );
               },
               onError: (err) => {
+                console.log("Line 836 :: err", err)
                 setError("Couldn't save new variant");
               },
             });
           }
-        }
-      
-      // window.location.href = '/dashboard/b2b/products/'
+      }
     }
+    // window.location.href = '/dashboard/b2b/products/'
     // carats.forEach((carat) => {
     //   sizes.forEach((size) => {
     //     colors.forEach((color, idx) => {
@@ -861,7 +865,7 @@ const AddProduct = () => {
 
   let getActualSize = (sizeGiven) => {
     let dataOfSize = sizes.filter(str => str.includes("-") ? str.includes(`-${sizeGiven}`) : str.includes(`${sizeGiven} `));
-    console.log("828 dataOfSize", dataOfSize)
+    // console.log("828 dataOfSize", dataOfSize)
     if (dataOfSize) {
       for (let dataSize of dataOfSize) {
         if (dataSize.includes("-")) {
@@ -873,7 +877,7 @@ const AddProduct = () => {
           return [dataSize];
         }
       }
-      console.log("840 dataOfSize", dataOfSize, "sizeGiven", sizeGiven)
+      // console.log("840 dataOfSize", dataOfSize, "sizeGiven", sizeGiven)
       return dataOfSize[0];
     } else {
       return sizeGiven;
@@ -1962,7 +1966,7 @@ const AddProduct = () => {
                       }}
                       className='w-full md:w-[46%]'
                     /> */}
-                    <SelectComponent
+                    {/* <SelectComponent
                       placeholder={"Select is common wastage charge"}
                       title={"Is common wastage charge *"}
                       required={true}
@@ -1978,7 +1982,7 @@ const AddProduct = () => {
                         });
                       }}
                       className='w-full md:w-[46%]'
-                    />
+                    /> */}
                     {/* {productVar?.attributes[8]?.values &&
                       productVar?.attributes[8]?.values[0] == "Studded" && (
                         <div className='flex flex-col items-start w-full md:w-[46%]'>
@@ -2067,15 +2071,15 @@ const AddProduct = () => {
                           subcategoryPrice?.makingChargeMode
                         }
                         disabled
-                        handleChange={(e) => {
-                          console.log(e);
-                          let tempData = structuredClone(productVar?.attributes);
-                          tempData[26].values = [e];
-                          setProductVar({
-                            ...productVar,
-                            attributes: tempData,
-                          });
-                        }}
+                        // handleChange={(e) => {
+                        //   console.log(e);
+                        //   let tempData = structuredClone(productVar?.attributes);
+                        //   tempData[26].values = [e];
+                        //   setProductVar({
+                        //     ...productVar,
+                        //     attributes: tempData,
+                        //   });
+                        // }}
                         className='w-full md:w-[46%]'
                       />
                     </div>
@@ -2097,15 +2101,15 @@ const AddProduct = () => {
                           subcategoryPrice?.wastageChargeMode
                         }
                         disabled
-                        handleChange={(e) => {
-                          console.log(e);
-                          let tempData = structuredClone(productVar?.attributes);
-                          tempData[27].values = [e];
-                          setProductVar({
-                            ...productVar,
-                            attributes: tempData,
-                          });
-                        }}
+                        // handleChange={(e) => {
+                        //   console.log(e);
+                        //   let tempData = structuredClone(productVar?.attributes);
+                        //   tempData[27].values = [e];
+                        //   setProductVar({
+                        //     ...productVar,
+                        //     attributes: tempData,
+                        //   });
+                        // }}
                         className='w-full md:w-[46%]'
                       />
                       </div>
